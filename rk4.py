@@ -60,3 +60,15 @@ def calcular_energia(posiciones, velocidades):
 def error_energia_relativo(energia):
     """Calcula el error relativo de energía respecto al valor inicial."""
     return np.abs((energia - energia[0]) / energia[0])
+
+
+def calcular_momento_angular(posiciones, velocidades):
+    """Calcula el momento angular específico h = r × v para cada paso."""
+    return np.cross(posiciones, velocidades)
+
+
+def calcular_derivada_momento_angular(posiciones, velocidades):
+    """Calcula la derivada del momento angular ḣ = r × r̈ para cada paso."""
+    r_norm = np.linalg.norm(posiciones, axis=1)
+    aceleracion = -(MU / r_norm**3).reshape(-1, 1) * posiciones
+    return np.cross(posiciones, aceleracion)

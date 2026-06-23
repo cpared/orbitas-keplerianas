@@ -116,3 +116,35 @@ def plot_orbitas_3d_multiples(posiciones_list, nombres_orbitas, posiciones_inici
     ax.plot_surface(x, y, z, alpha=0.3)
     
     plt.show()
+
+
+def plot_magnitudes_orbitales(resultados):
+    """Grafica |h|, |ḣ| y ε para todas las órbitas (3 figuras)."""
+    colores = ['blue', 'orange', 'green']
+
+    fig, axes = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
+
+    for r, color in zip(resultados, colores):
+        axes[0].plot(r['tiempos'], r['h_mag'], label=r['nombre'], color=color)
+    axes[0].set_ylabel("|h| [km²/s]")
+    axes[0].set_title("Momento angular específico")
+    axes[0].grid(True)
+    axes[0].legend()
+
+    for r, color in zip(resultados, colores):
+        axes[1].plot(r['tiempos'], r['hdot_mag'], label=r['nombre'], color=color)
+    axes[1].set_ylabel("|ḣ| [km²/s²]")
+    axes[1].set_title("Derivada del momento angular")
+    axes[1].grid(True)
+    axes[1].legend()
+
+    for r, color in zip(resultados, colores):
+        axes[2].plot(r['tiempos'], r['energia'], label=r['nombre'], color=color)
+    axes[2].set_xlabel("Tiempo [s]")
+    axes[2].set_ylabel("ε [km²/s²]")
+    axes[2].set_title("Energía total específica")
+    axes[2].grid(True)
+    axes[2].legend()
+
+    plt.tight_layout()
+    plt.show()

@@ -1,10 +1,11 @@
 """Main - Menú interactivo de visualización de órbitas."""
 import numpy as np
 from data import leer_archivo
-from calculos import calcular_orbita_spline, calcular_error_spline, calcular_orbitas_rk4
+from calculos import calcular_orbita_spline, calcular_error_spline, calcular_orbitas_rk4, calcular_magnitudes_24h
 from plots import (
     plot_orbita_3d, plot_orbita_3d_con_spline, plot_componentes_vs_tiempo,
-    plot_error_spline, plot_conservacion_energia, plot_orbitas_3d_multiples
+    plot_error_spline, plot_conservacion_energia, plot_orbitas_3d_multiples,
+    plot_magnitudes_orbitales
 )
 
 
@@ -104,6 +105,19 @@ def menu_opcion_5():
     plot_conservacion_energia(errores_energia, nombres)
 
 
+def menu_opcion_6():
+    """Opción 6: Punto C (opcional) — Momento angular y energía (24h)."""
+    print("\nPropagando órbitas durante 24h...")
+    condiciones = [
+        ("Circular", P0_circular, V0_circular, 86400),
+        ("Geoestacionaria", P0_geo, V0_geo, 86400),
+        ("Molniya", P0_molniya, V0_molniya, 86400)
+    ]
+    resultados = calcular_magnitudes_24h(condiciones, h=1, tiempo_total=86400)
+    print("✓ Propagación completada")
+    plot_magnitudes_orbitales(resultados)
+
+
 def menu():
     """Menú interactivo principal."""
     while True:
@@ -114,10 +128,11 @@ def menu():
         print("3) Componentes X/Y/Z vs tiempo")
         print("4) Punto C: comparar spline(600s) vs referencia(1s)")
         print("5) Punto A: simular órbitas RK4")
-        print("6) Salir")
+        print("6) Punto C (opcional): Momento angular y energía (24h)")
+        print("7) Salir")
         print("="*50)
         
-        opt = input("Opción [1-6]: ").strip()
+        opt = input("Opción [1-7]: ").strip()
         
         if opt == "1":
             menu_opcion_1()
@@ -130,6 +145,8 @@ def menu():
         elif opt == "5":
             menu_opcion_5()
         elif opt == "6":
+            menu_opcion_6()
+        elif opt == "7":
             print("Saliendo.")
             break
         else:

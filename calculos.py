@@ -1,7 +1,7 @@
 """Módulo de cálculos para los diferentes puntos del trabajo práctico."""
 import numpy as np
 from spline import spline_natural, evaluar_spline_vectorizado
-from rk4 import propagar_orbita, calcular_energia, error_energia_relativo
+from rk4 import propagar_orbita, calcular_energia, error_energia_relativo, calcular_momento_angular, calcular_derivada_momento_angular
 from data import leer_archivo
 
 
@@ -105,4 +105,23 @@ def calcular_orbitas_rk4(condiciones_iniciales, h=1):
             'error_energia': error_rel
         })
     
+    return resultados
+
+
+def calcular_magnitudes_24h(condiciones_iniciales, h=1, tiempo_total=86400):
+    """Propaga 24h y calcula |h|, |ḣ|, ε para cada órbita."""
+    resultados = []
+    for nombre, r0, v0, T in condiciones_iniciales:
+        pos, vel = propagar_orbita(r0, v0, h, tiempo_total)
+        h_vec = calcular_momento_angular(pos, vel)
+        hdot_vec = calcular_derivada_momento_angular(pos, vel)
+        energia = calcular_energia(pos, vel)
+        tiempos = np.arange(0, tiempo_total + h, h)
+        resultados.append({
+            'nombre': nombre,
+            'tiempos': tiempos,
+            'h_mag': np.linalg.norm(h_vec, axis=1),
+            'hdot_mag': np.linalg.norm(hdot_vec, axis=1),
+            'energia': energia
+        })
     return resultados
