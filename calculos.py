@@ -2,7 +2,7 @@
 import numpy as np
 from spline import spline_natural, evaluar_spline_vectorizado
 from rk4 import propagar_orbita, calcular_energia, error_energia_relativo, calcular_momento_angular, calcular_derivada_momento_angular
-from data import leer_archivo
+from data import leer_archivo, leer_primer_estado
 
 
 def calcular_orbita_spline(archivo_ref, archivo_muestras, tiempo_periodo=6600):
@@ -106,6 +106,46 @@ def calcular_orbitas_rk4(condiciones_iniciales, h=1):
         })
     
     return resultados
+
+
+def comparar_rk4_con_spline(archivo_600s, datos_spline, tiempo_periodo=6600):
+    """Punto D: compara RK4(600s)+spline y RK4(1s) vs spline de datos reales."""
+    r0, v0 = leer_primer_estado(archivo_600s)
+
+    pos_600s, _ = propagar_orbita(r0, v0, 600, tiempo_periodo)
+    tiempos_600s = np.arange(0, tiempo_periodo + 600, 600)
+    t_x_m, coef_x_m = spline_natural(tiempos_600s, pos_600s[:, 0])
+    t_y_m, coef_y_m = spline_natural(tiempos_600s, pos_600s[:, 1])
+    t_z_m, coef_z_m = spline_natural(tiempos_600s, pos_600s[:, 2])
+
+    tiempos_finos = np.arange(0, tiempo_periodo + 60, 60)
+    x_rk4_600s = np.array([evaluar_spline_vectorizado(t, t_x_m, *coef_x_m) for t in tiempos_finos])
+    y_rk4_600s = np.array([evaluar_spline_vectorizado(t, t_y_m, *coef_y_m) for t in tiempos_finos])
+    z_rk4_600s = np.array([evaluar_spline_vectorizado(t, t_z_m, *coef_z_m) for t in tiempos_finos])
+
+    pos_1s, _ = propagar_orbita(r0, v0, 1, tiempo_periodo)
+    tiempos_1s = np.arange(0, tiempo_periodo + 1, 1)
+    t_x_1s, coef_x_1s = spline_natural(tiempos_1s, pos_1s[:, 0])
+    t_y_1s, coef_y_1s = spline_natural(tiempos_1s, pos_1s[:, 1])
+    t_z_1s, coef_z_1s = spline_natural(tiempos_1s, pos_1s[:, 2])
+
+    x_rk4_1s = np.array([evaluar_spline_vectorizado(t, t_x_1s, *coef_x_1s) for t in tiempos_finos])
+    y_rk4_1s = np.array([evaluar_spline_vectorizado(t, t_y_1s, *coef_y_1s) for t in tiempos_finos])
+    z_rk4_1s = np.array([evaluar_spline_vectorizado(t, t_z_1s, *coef_z_1s) for t in tiempos_finos])
+
+    t_ref, x_ref, y_ref, z_ref, _, _, _, _ = datos_spline['orbita_periodo']
+
+    norma_rk4_600s = np.sqrt(x_rk4_600s**2 + y_rk4_600s**2 + z_rk4_600s**2)
+    norma_rk4_1s = np.sqrt(x_rk4_1s**2 + y_rk4_1s**2 + z_rk4_1s**2)
+    norma_ref = np.sqrt(x_ref**2 + y_ref**2 + z_ref**2)
+
+    return {
+        'tiempos': tiempos_finos,
+        'norma_rk4_600s': norma_rk4_600s,
+        'norma_rk4_1s': norma_rk4_1s,
+        'norma_ref': norma_ref,
+        'diff_norma': norma_rk4_600s - norma_ref
+    }
 
 
 def calcular_magnitudes_24h(condiciones_iniciales, h=1, tiempo_total=86400):

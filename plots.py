@@ -105,8 +105,7 @@ def plot_orbitas_3d_multiples(posiciones_list, nombres_orbitas, posiciones_inici
     plt.tight_layout()
     if save_path:
         plt.savefig(save_path, dpi=150)
-    
-    # Dibujar superficie terrestre
+
     u = np.linspace(0, 2*np.pi, 50)
     v = np.linspace(0, np.pi, 50)
     R = 6378
@@ -114,7 +113,33 @@ def plot_orbitas_3d_multiples(posiciones_list, nombres_orbitas, posiciones_inici
     y = R*np.outer(np.sin(u), np.sin(v))
     z = R*np.outer(np.ones(np.size(u)), np.cos(v))
     ax.plot_surface(x, y, z, alpha=0.3)
-    
+
+    plt.show()
+
+
+def plot_comparacion_rk4_spline(resultados):
+    """Grafica comparación RK4 vs spline real (Punto D)."""
+    t = resultados['tiempos']
+    diff = resultados['diff_norma']
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(t, diff)
+    plt.xlabel("Tiempo [s]")
+    plt.ylabel("Δ|r| = |r_RK4(600s)| − |r_spline_real| [km]")
+    plt.title("Diferencia de normas: RK4(paso 600s)+spline vs spline real (1.B)")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(t, resultados['norma_rk4_600s'], label="RK4(600s) + spline")
+    plt.plot(t, resultados['norma_rk4_1s'], label="RK4(1s) + spline", linestyle="--")
+    plt.xlabel("Tiempo [s]")
+    plt.ylabel("|r| [km]")
+    plt.title("Comparación de normas: RK4 paso grueso (600s) vs paso fino (1s)")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
     plt.show()
 
 

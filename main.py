@@ -1,11 +1,14 @@
 """Main - Menú interactivo de visualización de órbitas."""
 import numpy as np
 from data import leer_archivo
-from calculos import calcular_orbita_spline, calcular_error_spline, calcular_orbitas_rk4, calcular_magnitudes_24h
+from calculos import (
+    calcular_orbita_spline, calcular_error_spline, calcular_orbitas_rk4,
+    calcular_magnitudes_24h, comparar_rk4_con_spline
+)
 from plots import (
     plot_orbita_3d, plot_orbita_3d_con_spline, plot_componentes_vs_tiempo,
     plot_error_spline, plot_conservacion_energia, plot_orbitas_3d_multiples,
-    plot_magnitudes_orbitales
+    plot_magnitudes_orbitales, plot_comparacion_rk4_spline
 )
 
 
@@ -118,6 +121,14 @@ def menu_opcion_6():
     plot_magnitudes_orbitales(resultados)
 
 
+def menu_opcion_7():
+    """Opción 7: Punto D (opcional) — RK4+Spline vs datos reales."""
+    print("\nPropagando órbita SAC-D con RK4 (pasos 600s y 1s)...")
+    resultados = comparar_rk4_con_spline(ARCHIVO_600_SEG, datos_spline)
+    print("✓ Comparación completada")
+    plot_comparacion_rk4_spline(resultados)
+
+
 def menu():
     """Menú interactivo principal."""
     while True:
@@ -129,10 +140,11 @@ def menu():
         print("4) Punto C: comparar spline(600s) vs referencia(1s)")
         print("5) Punto A: simular órbitas RK4")
         print("6) Punto C (opcional): Momento angular y energía (24h)")
-        print("7) Salir")
+        print("7) Punto D (opcional): RK4+Spline vs datos reales SAC-D")
+        print("8) Salir")
         print("="*50)
         
-        opt = input("Opción [1-7]: ").strip()
+        opt = input("Opción [1-8]: ").strip()
         
         if opt == "1":
             menu_opcion_1()
@@ -147,6 +159,8 @@ def menu():
         elif opt == "6":
             menu_opcion_6()
         elif opt == "7":
+            menu_opcion_7()
+        elif opt == "8":
             print("Saliendo.")
             break
         else:

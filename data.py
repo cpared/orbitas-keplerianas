@@ -14,3 +14,12 @@ def leer_archivo(arch):
             z.append(float(datos[4]))
             t.append(i * step)
     return np.array(t), np.array(x), np.array(y), np.array(z)
+
+
+def leer_primer_estado(archivo):
+    """Lee la primera línea y devuelve (posicion, velocidad) como arrays."""
+    with open(archivo, "r") as f:
+        datos = f.readline().split()
+    r0 = np.array([float(datos[2]), float(datos[3]), float(datos[4])])
+    v0 = np.array([float(datos[5]), float(datos[6]), float(datos[7])])
+    return r0, v0
