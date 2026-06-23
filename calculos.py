@@ -2,7 +2,7 @@
 import numpy as np
 from spline import spline_natural, evaluar_spline_vectorizado
 from rk4 import propagar_orbita, calcular_energia, error_energia_relativo, calcular_momento_angular, calcular_derivada_momento_angular
-from data import leer_archivo, leer_primer_estado
+from data import leer_archivo, leer_primer_estado, leer_estados
 
 
 def calcular_orbita_spline(archivo_ref, archivo_muestras, tiempo_periodo=6600):
@@ -165,3 +165,67 @@ def calcular_magnitudes_24h(condiciones_iniciales, h=1, tiempo_total=86400):
             'energia': energia
         })
     return resultados
+
+
+def propagar_con_correcciones_gps(archivo_gps, paso=1):
+    """
+    Propaga la orbita usando RK4 con correcciones GPS cada 60 segundos.
+    Cada vez que hay una medicion nueva, reinicia el integrador.
+    """
+    tiempos_gps, posiciones_gps, velocidades_gps = leer_estados(archivo_gps)
+
+    tiempos_completos = []
+    posiciones_completas = []
+
+    for i in range(len(tiempos_gps)):
+        r0 = posiciones_gps[i]
+        v0 = velocidades_gps[i]
+
+        if i == len(tiempos_gps) - 1:
+            tiempos_completos.append(tiempos_gps[i])
+            posiciones_completas.append(r0)
+        else:
+            pos_segmento, _ = propagar_orbita(r0, v0, paso, 60)
+            pos_segmento = pos_segmento[:-1]
+
+            t_segmento = tiempos_gps[i] + np.arange(len(pos_segmento)) * paso
+            tiempos_completos.extend(t_segmento)
+            posiciones_completas.extend(pos_segmento)
+
+    return np.array(tiempos_completos), np.array(posiciones_completas)
+
+
+def comparar_con_referencia_1s(tiempos_corregidos, posiciones_corregidas, archivo_1s):
+    """
+    Compara la trayectoria corregida contra la referencia de 1 segundo.
+    Interpola la trayectoria corregida a la grilla de la referencia y calcula
+    la diferencia de normas.
+    """
+    tiempos_ref, x_ref, y_ref, z_ref = leer_archivo(archivo_1s)
+
+    t_max = tiempos_corregidos[-1]
+    mascara = tiempos_ref <= t_max
+    tiempos_ref = tiempos_ref[mascara]
+    x_ref = x_ref[mascara]
+    y_ref = y_ref[mascara]
+    z_ref = z_ref[mascara]
+
+    t_x, coef_x = spline_natural(tiempos_corregidos, posiciones_corregidas[:, 0])
+    t_y, coef_y = spline_natural(tiempos_corregidos, posiciones_corregidas[:, 1])
+    t_z, coef_z = spline_natural(tiempos_corregidos, posiciones_corregidas[:, 2])
+
+    x_interp = evaluar_spline_vectorizado(tiempos_ref, t_x, *coef_x)
+    y_interp = evaluar_spline_vectorizado(tiempos_ref, t_y, *coef_y)
+    z_interp = evaluar_spline_vectorizado(tiempos_ref, t_z, *coef_z)
+
+    norma_corregida = np.sqrt(x_interp**2 + y_interp**2 + z_interp**2)
+    norma_referencia = np.sqrt(x_ref**2 + y_ref**2 + z_ref**2)
+    diferencia = norma_corregida - norma_referencia
+
+    return {
+        'tiempos': tiempos_ref,
+        'norma_corregida': norma_corregida,
+        'norma_referencia': norma_referencia,
+        'diferencia': diferencia,
+        'error_max': np.max(np.abs(diferencia))
+    }

@@ -3,18 +3,20 @@ import numpy as np
 from data import leer_archivo
 from calculos import (
     calcular_orbita_spline, calcular_error_spline, calcular_orbitas_rk4,
-    calcular_magnitudes_24h, comparar_rk4_con_spline
+    calcular_magnitudes_24h, comparar_rk4_con_spline,
+    propagar_con_correcciones_gps, comparar_con_referencia_1s
 )
 from plots import (
     plot_orbita_3d, plot_orbita_3d_con_spline, plot_componentes_vs_tiempo,
     plot_error_spline, plot_conservacion_energia, plot_orbitas_3d_multiples,
-    plot_magnitudes_orbitales, plot_comparacion_rk4_spline
+    plot_magnitudes_orbitales, plot_comparacion_rk4_spline, plot_comparacion_gps
 )
 
 
 # Configuración
 ARCHIVO_1_SEG = "SACD_TPV_step_1s.txt"
 ARCHIVO_600_SEG = "SACD_TPV_step_600s.txt"
+ARCHIVO_60_SEG = "SACD_TPV_step_60s.txt"
 
 # Condiciones iniciales para Punto A
 P0_circular = np.array([6125.24, -3547.04, -3.31277])
@@ -129,6 +131,18 @@ def menu_opcion_7():
     plot_comparacion_rk4_spline(resultados)
 
 
+def menu_opcion_8():
+    """Opción 8: Punto 3 (opcional) — Correcciones GPS cada 60s."""
+    print("\nPropagando con correcciones GPS...")
+    tiempos, posiciones = propagar_con_correcciones_gps(ARCHIVO_60_SEG)
+
+    print("Comparando contra referencia de 1s...")
+    resultados = comparar_con_referencia_1s(tiempos, posiciones, ARCHIVO_1_SEG)
+    print(f"Error maximo en norma = {resultados['error_max']:.3f} km")
+
+    plot_comparacion_gps(resultados)
+
+
 def menu():
     """Menú interactivo principal."""
     while True:
@@ -141,10 +155,11 @@ def menu():
         print("5) Punto A: simular órbitas RK4")
         print("6) Punto C (opcional): Momento angular y energía (24h)")
         print("7) Punto D (opcional): RK4+Spline vs datos reales SAC-D")
-        print("8) Salir")
+        print("8) Punto 3 (opcional): Correcciones GPS cada 60s")
+        print("9) Salir")
         print("="*50)
         
-        opt = input("Opción [1-8]: ").strip()
+        opt = input("Opción [1-9]: ").strip()
         
         if opt == "1":
             menu_opcion_1()
@@ -161,6 +176,8 @@ def menu():
         elif opt == "7":
             menu_opcion_7()
         elif opt == "8":
+            menu_opcion_8()
+        elif opt == "9":
             print("Saliendo.")
             break
         else:

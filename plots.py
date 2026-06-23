@@ -173,3 +173,27 @@ def plot_magnitudes_orbitales(resultados):
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_comparacion_gps(resultados):
+    t = resultados['tiempos']
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(t, resultados['diferencia'])
+    plt.xlabel("Tiempo [s]")
+    plt.ylabel("Diferencia de norma [km]")
+    plt.title("Correcciones GPS cada 60s: diferencia con la referencia de 1s")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(t, resultados['norma_corregida'], label="RK4 + correcciones GPS")
+    plt.plot(t, resultados['norma_referencia'], label="Referencia 1s", linestyle="--")
+    plt.xlabel("Tiempo [s]")
+    plt.ylabel("|r| [km]")
+    plt.title("Esquema con correcciones GPS vs referencia")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()

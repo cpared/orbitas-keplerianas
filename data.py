@@ -16,6 +16,19 @@ def leer_archivo(arch):
     return np.array(t), np.array(x), np.array(y), np.array(z)
 
 
+def leer_estados(archivo):
+    """Lee posiciones y velocidades de todas las lineas."""
+    tiempos, posiciones, velocidades = [], [], []
+    step = int(archivo.split("_")[-1].replace("s.txt", ""))
+    with open(archivo, "r") as f:
+        for i, linea in enumerate(f):
+            datos = linea.split()
+            posiciones.append([float(datos[2]), float(datos[3]), float(datos[4])])
+            velocidades.append([float(datos[5]), float(datos[6]), float(datos[7])])
+            tiempos.append(i * step)
+    return (np.array(tiempos), np.array(posiciones), np.array(velocidades))
+
+
 def leer_primer_estado(archivo):
     """Lee la primera línea y devuelve (posicion, velocidad) como arrays."""
     with open(archivo, "r") as f:
